@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#171923">
+<title>JI Calculadora 3D</title>
+<style>
+:root{--bg:#f4f5f8;--card:#fff;--ink:#202331;--muted:#687083;--line:#e4e7ee;--accent:#6757d9;--accent2:#5142c5;--green:#13865b;--soft:#f0efff;--shadow:0 8px 28px #2023310d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:#171923;color:#fff;padding:24px max(18px,calc((100% - 1100px)/2));}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#8b7cff,#5544c8);display:grid;place-items:center;font-weight:900;font-size:18px}.brand h1{font-size:22px;margin:0}.brand p{margin:2px 0 0;color:#c5c7d3;font-size:13px}
+main{max-width:1100px;margin:24px auto;padding:0 16px 50px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:19px;box-shadow:var(--shadow);margin-bottom:16px}
+h2{font-size:17px;margin:0 0 15px}h3{font-size:14px;margin:18px 0 10px;color:#43495a}
+.mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f0f1f6;padding:5px;border-radius:12px;margin-bottom:14px}
+.mode button{border:0;background:transparent;padding:10px;border-radius:9px;font-weight:700;color:var(--muted);cursor:pointer}
+.mode button.active{background:#fff;color:var(--accent);box-shadow:0 2px 8px #0000000d}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{min-width:0}.field.full{grid-column:1/-1}label{display:block;font-size:12px;color:#596174;font-weight:650;margin-bottom:5px}
+input{width:100%;padding:10px 11px;border:1px solid #d9dce5;border-radius:9px;background:#fff;color:var(--ink);font:inherit;outline:none}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #6757d91c}
+small,.hint{display:block;color:var(--muted);font-size:11px;margin-top:5px}
+.range-row{display:flex;justify-content:space-between;align-items:center}.range-row strong{color:var(--accent);font-size:20px}
+input[type=range]{padding:0;accent-color:var(--accent);box-shadow:none}
+.note{padding:11px 12px;border-radius:10px;background:var(--soft);color:#5147a4;font-size:12px;margin:12px 0 0}
+.summary{position:sticky;top:14px;align-self:start}
+.big{background:linear-gradient(145deg,#f2f0ff,#f8f7ff);border:1px solid #e5e1ff;border-radius:13px;padding:16px;margin:12px 0}
+.big .eyebrow{font-size:12px;color:#625a9d;font-weight:700}.big .amount{font-size:32px;font-weight:850;letter-spacing:-1px;color:#4334b4;margin:3px 0}
+.big .sub{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13px}td{padding:8px 0;border-bottom:1px solid var(--line)}td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:650}tr.total td{font-weight:800;border-top:1px solid #cfd2dc;border-bottom:0;padding-top:12px}
+.profit{color:var(--green)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+button.action{border:0;border-radius:10px;padding:11px 14px;font-weight:750;cursor:pointer;background:var(--accent);color:#fff}
+button.secondary{background:#f0f1f6;color:#34394a}
+.status{font-size:12px;color:var(--muted);margin-top:10px}
+footer{max-width:1100px;margin:-28px auto 30px;padding:0 16px;color:var(--muted);font-size:11px}
+@media(max-width:800px){main{grid-template-columns:1fr}.summary{position:static}.grid{gap:10px}.panel{padding:15px}}
+@media(max-width:390px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.big .amount{font-size:28px}}
+@media print{body{background:#fff}header{background:#fff;color:#111;padding:12px 0}.brand p{color:#555}main{display:block;max-width:100%;margin:0;padding:0}.panel{box-shadow:none;break-inside:avoid}.summary{position:static}.actions,.mode{display:none}footer{margin:10px 0}}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#171923">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JI Calculadora 3D">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+</head>
+<body>
+<header><div class="brand"><div class="logo">JI</div><div><h1>Calculadora 3D</h1><p>Costos, producción y cotizaciones · Uso personal</p></div></div></header>
+<main>
+<section>
+  <div class="panel">
+    <h2>1. Modalidad de producción</h2>
+    <div class="mode"><button id="individual" class="active" type="button">Por pieza</button><button id="lote" type="button">Por lote</button></div>
+    <div class="grid">
+      <div class="field"><label for="qty">Cantidad de piezas</label><input id="qty" type="number" min="1" step="1" value="1"></div>
+      <div class="field"><label id="gramsLabel" for="grams">Filamento por pieza (g)</label><input id="grams" type="number" min="0" step="0.01" value="60"></div>
+      <div class="field"><label id="hoursLabel" for="hours">Horas de impresión por pieza</label><input id="hours" type="number" min="0" step="0.01" value="2"></div>
+      <div class="field"><label for="minutes">Minutos adicionales</label><input id="minutes" type="number" min="0" max="59" step="1" value="0"></div>
+      <div class="field full"><label id="manualLabel" for="manual">Tus horas de trabajo personal por pieza</label><input id="manual" type="number" min="0" step="0.01" value="0.25"><small>Solo preparación, retiro, limpieza, soportes, ensamblaje y acabado. No incluye el tiempo automático de impresión.</small></div>
+    </div>
+    <div class="note" id="modeNote">Introduce gramos y tiempo de máquina correspondientes a una pieza. La calculadora multiplica por la cantidad.</div>
+  </div>
+
+  <div class="panel">
+    <h2>2. Material y desperdicio</h2>
+    <div class="grid">
+      <div class="field"><label for="rollPrice">Precio del rollo (MXN)</label><input id="rollPrice" type="number" min="0" step="0.01" value="380"></div>
+      <div class="field"><label for="rollWeight">Peso neto del rollo (g)</label><input id="rollWeight" type="number" min="0.01" step="1" value="1000"></div>
+      <div class="field"><label for="waste">Desperdicio (%)</label><input id="waste" type="number" min="0" max="99.99" step="0.1" value="5"></div>
+      <div class="field"><label for="failure">Reserva por fallos (%)</label><input id="failure" type="number" min="0" max="99.99" step="0.1" value="5"></div>
+    </div>
+    <small>El desperdicio aumenta los gramos costeados. La reserva por fallos estima el costo esperado de reimpresiones.</small>
+  </div>
+
+  <div class="panel">
+    <h2>3. Electricidad e impresora</h2>
+    <div class="grid">
+      <div class="field"><label for="watts">Consumo promedio estimado (W)</label><input id="watts" type="number" min="0" step="1" value="95"></div>
+      <div class="field"><label for="kwh">Tarifa eléctrica con IVA (MXN/kWh)</label><input id="kwh" type="number" min="0" step="0.0001" value="4.0832"></div>
+      <div class="field"><label for="machineCost">Costo de impresora (MXN)</label><input id="machineCost" type="number" min="0" step="0.01" value="10000"></div>
+      <div class="field"><label for="life">Vida útil estimada (años)</label><input id="life" type="number" min="0.01" step="0.5" value="5"></div>
+      <div class="field"><label for="days">Días de uso al año</label><input id="days" type="number" min="0.01" step="1" value="300"></div>
+      <div class="field"><label for="daily">Horas disponibles al día</label><input id="daily" type="number" min="0.01" step="0.5" value="8"></div>
+      <div class="field full"><label for="maintenance">Reserva de mantenimiento anual (MXN)</label><input id="maintenance" type="number" min="0" step="50" value="1200"></div>
+    </div>
+    <small>95 W es una estimación inicial, no una medición de tu A1 Combo. Sustitúyela cuando puedas medir el consumo real.</small>
+  </div>
+
+  <div class="panel">
+    <h2>4. Mano de obra y otros gastos</h2>
+    <div class="grid">
+      <div class="field"><label for="laborRate">Tu tarifa por hora (MXN)</label><input id="laborRate" type="number" min="0" step="1" value="80"></div>
+      <div class="field"><label for="pack">Empaque por pieza (MXN)</label><input id="pack" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field full"><label for="extras">Otros gastos por pieza (MXN)</label><input id="extras" type="number" min="0" step="0.01" value="0"></div>
+    </div>
+    <small>En pedidos por lote, las horas personales son el total del lote; empaque y otros gastos se multiplican por el número de piezas.</small>
+  </div>
+
+  <div class="panel">
+    <h2>5. Ganancia deseada</h2>
+    <div class="range-row"><label for="markup">Ganancia agregada sobre el costo</label><strong id="markupText">100%</strong></div>
+    <input id="markup" type="range" min="0" max="300" step="5" value="100">
+    <small>100% significa recuperar todos los costos y ganar otro tanto: costo de $100 → precio de $200.</small>
+  </div>
+</section>
+
+<aside class="summary">
+  <div class="panel">
+    <h2>Resultado de cotización</h2>
+    <div class="big"><div class="eyebrow">Precio sugerido por pieza</div><div class="amount" id="unitPrice">$—</div><div class="sub" id="unitSub">Con ganancia configurada</div></div>
+    <table>
+      <tbody id="breakdown"></tbody>
+    </table>
+    <div class="big"><div class="eyebrow">Precio total del pedido</div><div class="amount" id="totalPrice">$—</div><div class="sub" id="totalSub">—</div></div>
+    <table>
+      <tbody>
+        <tr><td>Costo real por pieza</td><td id="unitCost">$—</td></tr>
+        <tr><td>Ganancia por pieza</td><td class="profit" id="unitProfit">$—</td></tr>
+        <tr><td>Costo real del pedido</td><td id="totalCost">$—</td></tr>
+        <tr class="total"><td>Ganancia estimada del pedido</td><td class="profit" id="totalProfit">$—</td></tr>
+      </tbody>
+    </table>
+    <div class="actions"><button class="action" id="copy">Copiar cotización</button><button class="action secondary" id="print">Imprimir / PDF</button><button class="action secondary" id="reset">Restablecer</button></div>
+    <div class="status" id="status" aria-live="polite">Los cambios se guardan automáticamente en este navegador.</div>
+  </div>
+</aside>
+</main>
+<footer>JI Calculadora 3D · Los valores son estimaciones para cotizar. Verifica tarifa eléctrica, consumo medido, mantenimiento y tiempos reales. Los datos se guardan localmente en este navegador y no se envían a ningún servidor.</footer>
+<script>
+(() => {
+ const ids=['qty','grams','hours','minutes','manual','rollPrice','rollWeight','waste','failure','watts','kwh','machineCost','life','days','daily','maintenance','laborRate','pack','extras','markup'];
+ const defaults={qty:1,grams:60,hours:2,minutes:0,manual:.25,rollPrice:380,rollWeight:1000,waste:5,failure:5,watts:95,kwh:4.0832,machineCost:10000,life:5,days:300,daily:8,maintenance:1200,laborRate:80,pack:0,extras:0,markup:100};
+ let mode='individual';
+ const $=id=>document.getElementById(id);
+ const num=id=>Number($(id).value);
+ const money=v=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(v);
+ const number=v=>new Intl.NumberFormat('es-MX',{maximumFractionDigits:2}).format(v);
+ function setMode(next){mode=next;$('individual').classList.toggle('active',mode==='individual');$('lote').classList.toggle('active',mode==='lote');
+  $('gramsLabel').textContent=mode==='individual'?'Filamento por pieza (g)':'Filamento total del lote (g)';
+  $('hoursLabel').textContent=mode==='individual'?'Horas de impresión por pieza':'Horas totales de impresión del lote';
+  $('manualLabel').textContent=mode==='individual'?'Tus horas de trabajo personal por pieza':'Tus horas de trabajo personal para todo el lote';
+  $('modeNote').textContent=mode==='individual'?'Introduce gramos y tiempo de máquina correspondientes a una pieza. La calculadora multiplica por la cantidad.':'Introduce los gramos y el tiempo de máquina de todo el lote. Las horas personales también corresponden al lote completo.';
+  calculate();}
+ function valid(){
+  for(const id of ids){const el=$(id),v=Number(el.value);if(el.value.trim()===''||!Number.isFinite(v)||v<Number(el.min||0))return false;}
+  return num('qty')>=1&&Number.isInteger(num('qty'))&&num('rollWeight')>0&&num('life')>0&&num('days')>0&&num('daily')>0&&num('waste')<100&&num('failure')<100;
+ }
+ function calculate(){
+  $('markupText').textContent=num('markup')+'%';
+  if(!valid()){
+   $('unitPrice').textContent='$—';$('totalPrice').textContent='$—';$('breakdown').innerHTML='<tr><td colspan="2">Revisa los datos: cantidad entera positiva, peso y parámetros de vida útil mayores que cero, porcentajes menores al 100%.</td></tr>';return;
+  }
+  const q=num('qty'),factor=mode==='individual'?q:1;
+  const printHours=(num('hours')+num('minutes')/60)*factor;
+  const grams=num('grams')*factor;
+  const manualHours=num('manual')*factor;
+  const material=grams*num('rollPrice')/num('rollWeight')*(1+num('waste')/100);
+  const electricity=printHours*num('watts')/1000*num('kwh');
+  const depreciation=printHours*num('machineCost')/(num('life')*num('days')*num('daily'));
+  const maintenance=printHours*num('maintenance')/(num('days')*num('daily'));
+  const labor=manualHours*num('laborRate');
+  const packaging=num('pack')*q,extras=num('extras')*q;
+  const subtotal=material+electricity+depreciation+maintenance+labor+packaging+extras;
+  // Expected cost per successful order, assuming independent attempts and the same average cost per attempt.
+  const failReserve=subtotal*num('failure')/(100-num('failure'));
+  const cost=subtotal+failReserve;
+  const unitCost=cost/q,unitPrice=unitCost*(1+num('markup')/100);
+  const totalPrice=unitPrice*q,profit=totalPrice-cost;
+  const rows=[
+   ['Filamento con desperdicio',material],['Electricidad',electricity],['Depreciación',depreciation],['Mantenimiento',maintenance],['Tu mano de obra',labor],['Empaque',packaging],['Otros gastos',extras],['Subtotal',subtotal],['Reserva estadística por fallos',failReserve],['Costo real estimado',cost]
+  ];
+  $('breakdown').innerHTML=rows.map((r,i)=>`<tr class="${i===rows.length-1?'total':''}"><td>${r[0]}</td><td>${money(r[1])}</td></tr>`).join('');
+  $('unitPrice').textContent=money(unitPrice);$('unitSub').textContent=`Ganancia agregada: ${num('markup')}% · ${q} pieza(s)`;
+  $('totalPrice').textContent=money(totalPrice);$('totalSub').textContent=`${money(unitPrice)} × ${q} piezas`;
+  $('unitCost').textContent=money(unitCost);$('unitProfit').textContent=money(unitPrice-unitCost);
+  $('totalCost').textContent=money(cost);$('totalProfit').textContent=money(profit);
+  window.lastQuote={mode,q,grams,printHours,manualHours,material,electricity,depreciation,maintenance,labor,packaging,extras,failReserve,cost,unitCost,unitPrice,totalPrice,profit};
+  save();
+ }
+ function save(){try{const data={mode};ids.forEach(id=>data[id]=$(id).value);localStorage.setItem('ji3d-calculator-v1',JSON.stringify(data));$('status').textContent='Guardado automáticamente en este navegador.';}catch(e){$('status').textContent='No se pudo guardar automáticamente; puedes seguir calculando.';}}
+ function restore(){try{const data=JSON.parse(localStorage.getItem('ji3d-calculator-v1')||'null');if(data){ids.forEach(id=>{if(data[id]!==undefined)$(id).value=data[id]});mode=data.mode||'individual';}}catch(e){}setMode(mode);}
+ ids.forEach(id=>$(id).addEventListener('input',calculate));
+ $('individual').addEventListener('click',()=>setMode('individual'));$('lote').addEventListener('click',()=>setMode('lote'));
+ $('copy').addEventListener('click',async()=>{if(!window.lastQuote)return;const x=window.lastQuote;const text=`JI CALCULADORA 3D\nModalidad: ${x.mode==='individual'?'Por pieza':'Por lote'}\nCantidad: ${x.q}\nFilamento total: ${number(x.grams)} g\nTiempo de máquina: ${number(x.printHours)} h\nTrabajo personal: ${number(x.manualHours)} h\nCosto real del pedido: ${money(x.cost)}\nCosto por pieza: ${money(x.unitCost)}\nPrecio por pieza: ${money(x.unitPrice)}\nPrecio total: ${money(x.totalPrice)}\nGanancia estimada: ${money(x.profit)}`;try{await navigator.clipboard.writeText(text);$('status').textContent='Cotización copiada.';}catch(e){$('status').textContent='No se pudo copiar automáticamente. Usa Imprimir / PDF.';}});
+ $('print').addEventListener('click',()=>window.print());
+ $('reset').addEventListener('click',()=>{ids.forEach(id=>$(id).value=defaults[id]);setMode('individual');calculate();$('status').textContent='Valores iniciales restaurados.';});
+ restore();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+</script>
+
+</body></html>

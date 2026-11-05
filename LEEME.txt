@@ -1,0 +1,23 @@
+JI CALCULADORA 3D — PAQUETE PWA
+
+CONTENIDO
+- index.html: calculadora.
+- manifest.webmanifest: nombre, iconos y configuración instalable.
+- service-worker.js: caché para uso sin conexión después de la primera visita.
+- icons/: iconos de la aplicación.
+
+IMPORTANTE PARA IPHONE
+Una PWA debe abrirse desde una dirección HTTPS para que Safari permita instalarla y habilite el funcionamiento sin conexión. No basta con abrir index.html desde Archivos ni con enviar el ZIP directamente.
+
+INSTALACIÓN EN IPHONE
+1. Publica TODO el contenido de esta carpeta en un hosting HTTPS estático (por ejemplo, GitHub Pages o Netlify).
+2. Abre la dirección publicada en Safari.
+3. Pulsa Compartir > Añadir a pantalla de inicio.
+4. Activa "Abrir como app" si aparece y pulsa Añadir.
+5. Abre la app una vez con internet para que guarde los archivos y después podrá cargar sin conexión.
+
+PRIVACIDAD
+La calculadora procesa los datos en el dispositivo. La PWA no incluye analítica ni envío de datos a servidores. El guardado de campos utiliza el almacenamiento local del navegador; los datos del Safari normal y de la app instalada pueden mantenerse separados.
+
+ACTUALIZACIONES
+Si publicas una versión nueva, cambia CACHE_NAME en service-worker.js (por ejemplo, v2) para renovar la caché.
